@@ -50,7 +50,10 @@ description: |
   - package.json: NPM package configuration
   - package-lock.json: NPM package lock
   - index.html: application root
-  - tests.js: Jest tests
+  - index.test.js: Jest test suite
+  - test-utils.js: Test helper utilities
+  - jest.config.js: Jest configuration
+  - jest.setup.js: Jest setup and configuration
   - style.css: CSS styles
   - script.js: JavaScript application
   - README.md: project documentation
