@@ -2,15 +2,12 @@
  * @jest-environment jsdom
  */
 import '@testing-library/jest-dom';
+import { loadHTML } from './test-utils.js';
 
 describe('FEAT-001: App title', () => {
   beforeEach(() => {
-    // Set up our document body
-    document.body.innerHTML = `
-      <header>
-        <h1>My TODO</h1>
-      </header>
-    `;
+    // Load the actual HTML file
+    loadHTML();
   });
 
   describe('EX-001: App title text', () => {
