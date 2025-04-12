@@ -1,0 +1,158 @@
+version: 1.0.0-it0
+description: |
+  # TODO app
+
+  This application is a web application in vanilla JS that
+  allows you to create, read, update, and delete tasks.
+
+  The tasks are stored in local storage as a JSON object.
+
+  ## Local storage
+
+  The local storage is a JSON object with a list of tasks (`tasks`).
+
+  Each task has a UUID, a title, a creation date, and a boolean `done` property.
+
+  Example:
+
+  ```json
+  {
+    "tasks": [
+      {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "title": "Task 1",
+        "createdAt": "2025-04-12T18:34:06.000Z",
+        "done": false
+      },
+      {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "title": "Task 2",
+        "createdAt": "2025-04-12T18:34:56.000Z",
+        "done": true
+      }
+    ]
+  }
+  ```
+
+  ## Technologies
+
+  - HTML
+  - CSS
+  - JavaScript
+  - Jest
+
+  ## Testing
+
+  The application is tested using Jest.
+
+  ## Project structure
+
+  - package.json: NPM package configuration
+  - package-lock.json: NPM package lock
+  - index.html: application root
+  - tests.js: Jest tests
+  - style.css: CSS styles
+  - script.js: JavaScript application
+  - README.md: project documentation
+
+  ## UI
+
+  The web-app displays as a minimalistic HTML page that consists
+  of a header with the app title "My TODO".
+
+  The main section displays a task creation form and the list of tasks.
+  
+  The task creation form consists of a text input for the task name
+  and a "Add" button.
+  
+  Tasks are displayed in a list with the following properties:
+
+  - title: the task title, striked through when task is completed
+  - done: a checkbox that marks the task as done
+
+  Tasks are ordered by descending creation date. Done tasks are displayed last.
+  
+  Clicking the done checkbox updates the done status of a task.
+
+features:
+  - id: FEAT-001
+    description: The web app shows a header with the app title "My TODO"
+    example:
+      - id: EX-001
+        operations:
+          - app title has text "My TODO"
+  - id: FEAT-002
+    description: The web app shows a placeholder when todo list is empty
+    example:
+      - id: EX-002
+        operations:
+          - task list placeholder has text "No tasks"
+  - id: FEAT-003
+    description: The app allows creating tasks
+    example:
+      - id: EX-003
+        operations:
+          - task creation form has text input for task name
+          - task creation form has button with text "Add"
+          - user types "New task" in task name input
+          - user clicks "Add" button
+          - task list has 1 task element
+          - task 1 has title "New task"
+          - task 1 is not done
+  - id: FEAT-004
+    description: The web app shows a list of tasks
+    example:
+      - id: EX-004
+        preconditions:
+          - task list has a pending task named "Task 1"
+          - task list has a completed task named "Task 2"
+        operations:
+          - task list has 2 task elements
+          - task with title "Task 1" is displayed first
+          - first task has title "Task 1"
+          - first task has checkbox
+          - first task has delete button
+          - first task is not done
+          - second task has title "Task 2"
+          - second task has checkbox
+          - second task has delete button
+          - second task is done
+  - id: FEAT-005
+    description: The app allows marking tasks as done
+    example:
+      - id: EX-005
+        preconditions:
+          - task list has a pending task named "Task 1"
+        operations:
+          - user clicks checkbox for first task
+          - first task is marked as done
+  - id: FEAT-006
+    description: The app allows marking tasks as not done
+    example:
+      - id: EX-006
+        preconditions:
+          - task list has a completed task named "Task 1"
+        operations:
+          - user clicks checkbox for first task
+          - first task is marked as not done
+  - id: FEAT-007
+    description: The app allows deleting tasks
+    example:
+      - id: EX-007
+        preconditions:
+          - task list has a pending task named "Task 1"
+        operations:
+          - user clicks delete button for first task
+          - first task is removed from the list
+          - task list has 0 task elements
+  - id: FEAT-008
+    description: The app state is persisted in local storage
+    example:
+      - id: EX-008
+        operations:
+          - user creates a task named "Task 1"
+          - user marks "Task 1" as done
+          - user refreshes the page
+          - task list has 1 task element
+          - first task has title "Task 1"
+          - first task is done
