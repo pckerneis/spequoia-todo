@@ -54,6 +54,8 @@ description: |
   - style.css: CSS styles
   - script.js: JavaScript application
   - README.md: project documentation
+  - .gitignore: git ignore file
+  - spequoia.yaml: Spequoia configuration file
 
   ## UI
 
