@@ -17,6 +17,9 @@
         </form>
         <div id="task-list"></div>
     </main>
-    <script src="script.js"></script>
+    <script type="module">
+        import { updateTaskList } from './script.js';
+        document.addEventListener('DOMContentLoaded', updateTaskList);
+    </script>
 </body>
 </html>
