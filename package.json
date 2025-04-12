@@ -1,0 +1,12 @@
+{
+  "name": "spequoia-todo",
+  "version": "1.0.0",
+  "description": "A minimalistic TODO application",
+  "main": "script.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
