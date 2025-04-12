@@ -39,21 +39,17 @@ description: |
   - HTML
   - CSS
   - JavaScript
-  - Jest
+  - Playwright
 
   ## Testing
 
-  The application is tested using Jest.
+  The application is tested using Playwright.
 
   ## Project structure
 
   - package.json: NPM package configuration
   - package-lock.json: NPM package lock
   - index.html: application root
-  - index.test.js: Jest test suite
-  - test-utils.js: Test helper utilities
-  - jest.config.js: Jest configuration
-  - jest.setup.js: Jest setup and configuration
   - style.css: CSS styles
   - script.js: JavaScript application
   - README.md: project documentation
