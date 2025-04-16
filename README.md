@@ -1,19 +1,19 @@
 # What is this repository?
 
-This repository is a vibe coding experimentation.
+This repository is an experimental space for vibe-driven coding.
 
-The goal is to see if the Spequoia format for software specification can be used to guide a LLM into implementing the software and corresponding automatic tests.
+The objective is to explore whether the Spequoia format for software specifications can effectively guide a language model in implementing both the software and its corresponding automated tests.
 
-I started by creating a specification file ([`spequoia.yaml`](spequoia.yaml)) and asked Windsurf Cascade to implement the application.
+I began by creating a [spequoia.yaml](spequoia.yaml) specification file and prompted Windsurf Cascade to generate the application.
 
-The experimentation gave pretty good results. I didn't have to edit a single line of code. I just tweaked the specification a bit to get the desired results, or fix some bugs.
+The results were surprisingly solid—I didn’t need to modify a single line of the generated code. Minor adjustments to the specification were enough to refine the output or resolve any bugs.
 
-The trickiest part was implementing Jest tests. The AI wasn't able to make the tests pass because of test infrastructure issues. I switched to Playwright E2E testing and from there it went smoothly.
+The most challenging part was getting the Jest tests to work. The AI struggled with issues related to the test setup. I eventually switched to Playwright for end-to-end testing, and things ran smoothly from there.
 
-There are still small inconsistencies: the README still references Jest, the styling is quite ugly, there are example Playwright tests left...
+Some inconsistencies remain—for example, the README still mentions Jest, the styling could use improvement, and there are leftover example Playwright tests...
 
-Windsurf version: 1.6.3
-Model: Claude 3.5 Sonnet
+- Windsurf version: 1.6.3
+- Model: Claude 3.5 Sonnet
 
 ### Prompt history
 
