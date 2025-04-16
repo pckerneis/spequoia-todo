@@ -1,15 +1,18 @@
-// Get tasks from local storage
+// Constants
+const ANIMATION_DURATION = 300;
+const LOCAL_STORAGE_KEY = 'tasks';
+
+// Storage operations
 function getTasks() {
-    const storedTasks = localStorage.getItem('tasks');
+    const storedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
     return storedTasks ? JSON.parse(storedTasks).tasks : [];
 }
 
-// Save tasks to local storage
 function saveTasks(tasks) {
-    localStorage.setItem('tasks', JSON.stringify({ tasks }));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ tasks }));
 }
 
-// Create a new task
+// Task operations
 function createTask(title) {
     return {
         id: crypto.randomUUID(),
@@ -19,7 +22,6 @@ function createTask(title) {
     };
 }
 
-// Add a new task
 function addTask(title) {
     const tasks = getTasks();
     const newTask = createTask(title);
@@ -29,24 +31,19 @@ function addTask(title) {
     return newTask;
 }
 
-// Initialize task list if empty
-function updateTaskList(animateTaskId = null) {
-    const taskList = document.getElementById('task-list');
+function deleteTask(taskId) {
     const tasks = getTasks();
-    
-    if (tasks.length === 0) {
-        taskList.innerHTML = '<p class="empty-state" data-testid="empty-state">No tasks</p>';
-        return;
+    const taskIndex = tasks.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+        tasks.splice(taskIndex, 1);
+        saveTasks(tasks);
+        updateTaskList();
     }
+}
 
-    // Sort tasks by completion status and then by creation date
-    const sortedTasks = [...tasks].sort((a, b) => {
-        if (a.done !== b.done) return a.done ? 1 : -1;
-        return new Date(a.createdAt) - new Date(b.createdAt);
-    });
-
-    // Create new task elements
-    taskList.innerHTML = sortedTasks.map((task, index) => `
+// UI operations
+function createTaskElement(task, index, animateTaskId) {
+    return `
         <div class="task ${animateTaskId === task.id ? 'task-moving' : ''}" 
              data-testid="task-${index + 1}"
              data-task-id="${task.id}">
@@ -62,50 +59,60 @@ function updateTaskList(animateTaskId = null) {
                     data-testid="task-${index + 1}-delete"
                     onclick="deleteTask('${task.id}')">Delete</button>
         </div>
-    `).join('');
+    `;
 }
 
-// Toggle task completion status
-function toggleTask(taskId) {
+function updateTaskList(animateTaskId = null) {
+    const taskList = document.getElementById('task-list');
     const tasks = getTasks();
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-        task.done = !task.done;
-        saveTasks(tasks);
-        
-        if (task.done) {
-            // Trigger animation
-            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-            if (taskElement) {
-                taskElement.classList.add('task-moving');
-                setTimeout(() => {
-                    updateTaskList(taskId);
-                    setTimeout(() => {
-                        const newTaskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-                        if (newTaskElement) {
-                            newTaskElement.classList.remove('task-moving');
-                        }
-                    }, 300);
-                }, 300);
-            }
-        } else {
-            updateTaskList();
-        }
+    
+    if (tasks.length === 0) {
+        taskList.innerHTML = '<p class="empty-state" data-testid="empty-state">No tasks</p>';
+        return;
+    }
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        return new Date(a.createdAt) - new Date(b.createdAt);
+    });
+
+    taskList.innerHTML = sortedTasks
+        .map((task, index) => createTaskElement(task, index, animateTaskId))
+        .join('');
+}
+
+async function animateTaskCompletion(taskId) {
+    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (!taskElement) return;
+
+    taskElement.classList.add('task-moving');
+    await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
+    
+    updateTaskList(taskId);
+    await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
+    
+    const newTaskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (newTaskElement) {
+        newTaskElement.classList.remove('task-moving');
     }
 }
 
-// Delete a task
-function deleteTask(taskId) {
+function toggleTask(taskId) {
     const tasks = getTasks();
-    const taskIndex = tasks.findIndex(t => t.id === taskId);
-    if (taskIndex !== -1) {
-        tasks.splice(taskIndex, 1);
-        saveTasks(tasks);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.done = !task.done;
+    saveTasks(tasks);
+    
+    if (task.done) {
+        animateTaskCompletion(taskId);
+    } else {
         updateTaskList();
     }
 }
 
-// Initialize when DOM is loaded
+// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('task-form');
     const input = document.getElementById('task-input');
