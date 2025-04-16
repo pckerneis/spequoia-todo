@@ -1,5 +1,5 @@
 // Get tasks from local storage
-export function getTasks() {
+function getTasks() {
     const storedTasks = localStorage.getItem('tasks');
     return storedTasks ? JSON.parse(storedTasks).tasks : [];
 }
@@ -20,7 +20,7 @@ function createTask(title) {
 }
 
 // Add a new task
-export function addTask(title) {
+function addTask(title) {
     const tasks = getTasks();
     const newTask = createTask(title);
     tasks.push(newTask);
@@ -30,7 +30,7 @@ export function addTask(title) {
 }
 
 // Initialize task list if empty
-export function updateTaskList() {
+function updateTaskList() {
     const taskList = document.getElementById('task-list');
     const tasks = getTasks();
     
@@ -49,29 +49,47 @@ export function updateTaskList() {
         <div class="task" data-testid="task-${index + 1}">
             <input type="checkbox" 
                    ${task.done ? 'checked' : ''} 
-                   data-testid="task-${index + 1}-checkbox">
+                   data-testid="task-${index + 1}-checkbox"
+                   onchange="toggleTask(${index})">
             <span class="task-title ${task.done ? 'done' : ''}" 
                   data-testid="task-${index + 1}-title">${task.title}</span>
-            <button class="delete-btn" data-testid="task-${index + 1}-delete">Delete</button>
+            <button class="delete-btn" 
+                    data-testid="task-${index + 1}-delete"
+                    onclick="deleteTask(${index})">Delete</button>
         </div>
     `).join('');
 }
 
-// Initialize when DOM is loaded
-if (typeof document !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('task-form');
-        const input = document.getElementById('task-input');
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = input.value.trim();
-            if (title) {
-                addTask(title);
-                input.value = '';
-            }
-        });
-
-        updateTaskList();
-    });
+// Toggle task completion status
+function toggleTask(index) {
+    const tasks = getTasks();
+    tasks[index].done = !tasks[index].done;
+    saveTasks(tasks);
+    updateTaskList();
 }
+
+// Delete a task
+function deleteTask(index) {
+    const tasks = getTasks();
+    tasks.splice(index, 1);
+    saveTasks(tasks);
+    updateTaskList();
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('task-form');
+    const input = document.getElementById('task-input');
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = input.value.trim();
+        if (title) {
+            addTask(title);
+            input.value = '';
+        }
+    });
+
+    updateTaskList();
+});
+
