@@ -134,6 +134,12 @@ features:
           - user clicks checkbox for first task
           - first task is marked as done
           - second task is not affected
+      - id: EX-005c
+        preconditions:
+          - task list has a pending task named "Task 1"
+        operations:
+          - user clicks task title area for first task
+          - first task is marked as done
   - id: FEAT-006
     description: The app allows marking tasks as not done
     example:

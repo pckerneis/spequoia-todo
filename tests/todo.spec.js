@@ -77,6 +77,26 @@ test.describe('TODO App Features', () => {
     await expect(page.getByTestId('task-2-title')).not.toHaveClass(/done/);
   });
 
+  test('FEAT-005c: Can mark task as done by clicking title area', async ({ page }) => {
+    // Create a task
+    await page.getByPlaceholder('Enter task...').fill('Task 1');
+    await page.getByRole('button', { name: 'Add' }).click();
+
+    // Mark task as done by clicking title
+    await page.getByTestId('task-1-title').click();
+
+    // Verify task is marked as done
+    await expect(page.getByTestId('task-1-checkbox')).toBeChecked();
+    await expect(page.getByTestId('task-1-title')).toHaveClass(/done/);
+
+    // Click title again to unmark
+    await page.getByTestId('task-1-title').click();
+
+    // Verify task is not done
+    await expect(page.getByTestId('task-1-checkbox')).not.toBeChecked();
+    await expect(page.getByTestId('task-1-title')).not.toHaveClass(/done/);
+  });
+
   test('FEAT-006: Can mark tasks as not done', async ({ page }) => {
     // Create a task and mark it as done
     await page.getByPlaceholder('Enter task...').fill('Task 1');

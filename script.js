@@ -51,7 +51,9 @@ function updateTaskList() {
                    data-testid="task-${index + 1}-checkbox"
                    onchange="toggleTask('${task.id}')">
             <span class="task-title ${task.done ? 'done' : ''}" 
-                  data-testid="task-${index + 1}-title">${task.title}</span>
+                  data-testid="task-${index + 1}-title"
+                  onclick="toggleTask('${task.id}')"
+                  style="cursor: pointer">${task.title}</span>
             <button class="delete-btn" 
                     data-testid="task-${index + 1}-delete"
                     onclick="deleteTask('${task.id}')">Delete</button>
