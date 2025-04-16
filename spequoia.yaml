@@ -1,4 +1,4 @@
-version: 1.0.0-it0
+version: 1.0.0-it1
 description: |
   # TODO app
 
@@ -121,12 +121,19 @@ features:
   - id: FEAT-005
     description: The app allows marking tasks as done
     example:
-      - id: EX-005
+      - id: EX-005a
         preconditions:
           - task list has a pending task named "Task 1"
         operations:
           - user clicks checkbox for first task
           - first task is marked as done
+      - id: EX-005b
+        preconditions:
+          - task list has two pending tasks named "Task 1" and "Task 2"
+        operations:
+          - user clicks checkbox for first task
+          - first task is marked as done
+          - second task is not affected
   - id: FEAT-006
     description: The app allows marking tasks as not done
     example:
