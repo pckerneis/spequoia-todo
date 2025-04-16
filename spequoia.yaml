@@ -170,3 +170,16 @@ features:
           - task list has 1 task element
           - first task has title "Task 1"
           - first task is done
+  - id: FEAT-009
+    description: Marking a task as done moves it to the end of the list with an animation
+    example:
+      - id: EX-009
+        preconditions:
+          - task list has a pending task named "Task 1"
+          - task list has a pending task named "Task 2"
+        operations:
+          - user marks "Task 1" as done
+          - animation is triggered
+          - first task has title "Task 2"
+          - second task has title "Task 1"
+          - second task is done
