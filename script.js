@@ -39,10 +39,9 @@ function updateTaskList() {
         return;
     }
 
-    // Sort tasks by creation date (newest first) and completion status
+    // Sort tasks by creation date (oldest first)
     const sortedTasks = [...tasks].sort((a, b) => {
-        if (a.done !== b.done) return a.done ? 1 : -1;
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
     taskList.innerHTML = sortedTasks.map((task, index) => `
@@ -50,30 +49,36 @@ function updateTaskList() {
             <input type="checkbox" 
                    ${task.done ? 'checked' : ''} 
                    data-testid="task-${index + 1}-checkbox"
-                   onchange="toggleTask(${index})">
+                   onchange="toggleTask('${task.id}')">
             <span class="task-title ${task.done ? 'done' : ''}" 
                   data-testid="task-${index + 1}-title">${task.title}</span>
             <button class="delete-btn" 
                     data-testid="task-${index + 1}-delete"
-                    onclick="deleteTask(${index})">Delete</button>
+                    onclick="deleteTask('${task.id}')">Delete</button>
         </div>
     `).join('');
 }
 
 // Toggle task completion status
-function toggleTask(index) {
+function toggleTask(taskId) {
     const tasks = getTasks();
-    tasks[index].done = !tasks[index].done;
-    saveTasks(tasks);
-    updateTaskList();
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        task.done = !task.done;
+        saveTasks(tasks);
+        updateTaskList();
+    }
 }
 
 // Delete a task
-function deleteTask(index) {
+function deleteTask(taskId) {
     const tasks = getTasks();
-    tasks.splice(index, 1);
-    saveTasks(tasks);
-    updateTaskList();
+    const taskIndex = tasks.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+        tasks.splice(taskIndex, 1);
+        saveTasks(tasks);
+        updateTaskList();
+    }
 }
 
 // Initialize when DOM is loaded
