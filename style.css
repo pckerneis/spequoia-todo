@@ -74,6 +74,12 @@ button:hover {
     gap: 10px;
     padding: 10px;
     border-bottom: 1px solid #eee;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.task-moving {
+    transform: translateX(100%);
+    opacity: 0;
 }
 
 .task:last-child {

@@ -30,7 +30,7 @@ function addTask(title) {
 }
 
 // Initialize task list if empty
-function updateTaskList() {
+function updateTaskList(animateTaskId = null) {
     const taskList = document.getElementById('task-list');
     const tasks = getTasks();
     
@@ -39,13 +39,17 @@ function updateTaskList() {
         return;
     }
 
-    // Sort tasks by creation date (oldest first)
+    // Sort tasks by completion status and then by creation date
     const sortedTasks = [...tasks].sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
+    // Create new task elements
     taskList.innerHTML = sortedTasks.map((task, index) => `
-        <div class="task" data-testid="task-${index + 1}">
+        <div class="task ${animateTaskId === task.id ? 'task-moving' : ''}" 
+             data-testid="task-${index + 1}"
+             data-task-id="${task.id}">
             <input type="checkbox" 
                    ${task.done ? 'checked' : ''} 
                    data-testid="task-${index + 1}-checkbox"
@@ -68,7 +72,25 @@ function toggleTask(taskId) {
     if (task) {
         task.done = !task.done;
         saveTasks(tasks);
-        updateTaskList();
+        
+        if (task.done) {
+            // Trigger animation
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskElement) {
+                taskElement.classList.add('task-moving');
+                setTimeout(() => {
+                    updateTaskList(taskId);
+                    setTimeout(() => {
+                        const newTaskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+                        if (newTaskElement) {
+                            newTaskElement.classList.remove('task-moving');
+                        }
+                    }, 300);
+                }, 300);
+            }
+        } else {
+            updateTaskList();
+        }
     }
 }
 

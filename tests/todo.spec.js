@@ -45,6 +45,45 @@ test.describe('TODO App Features', () => {
     await expect(page.getByTestId('task-1-title')).toHaveText('Persistent task');
   });
 
+  test('FEAT-008: Task state persists after page reload', async ({ page }) => {
+    // Create a task
+    await page.getByPlaceholder('Enter task...').fill('Persistent task');
+    await page.getByRole('button', { name: 'Add' }).click();
+
+    // Mark task as done
+    await page.getByTestId('task-1-checkbox').click();
+
+    // Reload page
+    await page.reload();
+
+    // Verify task exists and is marked as done
+    await expect(page.getByTestId('task-1-checkbox')).toBeChecked();
+    await expect(page.getByTestId('task-1-title')).toHaveText('Persistent task');
+  });
+
+  test('FEAT-009: Completed tasks move to the end with animation', async ({ page }) => {
+    // Create two tasks
+    await page.getByPlaceholder('Enter task...').fill('Task 1');
+    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByPlaceholder('Enter task...').fill('Task 2');
+    await page.getByRole('button', { name: 'Add' }).click();
+
+    // Verify initial order
+    await expect(page.getByTestId('task-1-title')).toHaveText('Task 1');
+    await expect(page.getByTestId('task-2-title')).toHaveText('Task 2');
+
+    // Mark first task as done
+    await page.getByTestId('task-1-checkbox').click();
+
+    // Wait for animation
+    await page.waitForTimeout(600);
+
+    // Verify new order
+    await expect(page.getByTestId('task-1-title')).toHaveText('Task 2');
+    await expect(page.getByTestId('task-2-title')).toHaveText('Task 1');
+    await expect(page.getByTestId('task-2-checkbox')).toBeChecked();
+  });
+
   test('FEAT-005a: Can mark a single task as done', async ({ page }) => {
     // Create a task
     await page.getByPlaceholder('Enter task...').fill('Task 1');
@@ -58,7 +97,7 @@ test.describe('TODO App Features', () => {
     await expect(page.getByTestId('task-1-title')).toHaveClass(/done/);
   });
 
-  test('FEAT-005b: Marking one task as done does not affect others', async ({ page }) => {
+  test('FEAT-005b: Marking one task as done does not affect others completion status', async ({ page }) => {
     // Create two tasks
     await page.getByPlaceholder('Enter task...').fill('Task 1');
     await page.getByRole('button', { name: 'Add' }).click();
@@ -68,13 +107,19 @@ test.describe('TODO App Features', () => {
     // Mark first task as done
     await page.getByTestId('task-1-checkbox').click();
 
-    // Verify first task is marked as done
-    await expect(page.getByTestId('task-1-checkbox')).toBeChecked();
-    await expect(page.getByTestId('task-1-title')).toHaveClass(/done/);
+    // Wait for animation
+    await page.waitForTimeout(600);
 
-    // Verify second task is not affected
-    await expect(page.getByTestId('task-2-checkbox')).not.toBeChecked();
-    await expect(page.getByTestId('task-2-title')).not.toHaveClass(/done/);
+    // After reordering, Task 2 should be first and Task 1 second
+    // Verify Task 1 is marked as done
+    await expect(page.getByTestId('task-2-title')).toHaveText('Task 1');
+    await expect(page.getByTestId('task-2-checkbox')).toBeChecked();
+    await expect(page.getByTestId('task-2-title')).toHaveClass(/done/);
+
+    // Verify Task 2 is not affected
+    await expect(page.getByTestId('task-1-title')).toHaveText('Task 2');
+    await expect(page.getByTestId('task-1-checkbox')).not.toBeChecked();
+    await expect(page.getByTestId('task-1-title')).not.toHaveClass(/done/);
   });
 
   test('FEAT-005c: Can mark task as done by clicking title area', async ({ page }) => {
