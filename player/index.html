@@ -1,0 +1,29 @@
+<div id="viewer">
+    <img id="screenshot" src="" />
+    <p id="description"></p>
+    <button onclick="prev()">Previous</button>
+    <button onclick="next()">Next</button>
+  </div>
+  
+  <script>
+    let steps = [];
+    let current = 0;
+  
+    fetch('data/screenshot-manifest.json')
+      .then(res => res.json())
+      .then(data => {
+        steps = data;
+        showStep(0);
+      });
+  
+    function showStep(i) {
+      if (i < 0 || i >= steps.length) return;
+      current = i;
+      document.getElementById('screenshot').src = `data/${steps[i].screenshotCounter}.png`;
+      document.getElementById('description').textContent = steps[i].description;
+    }
+  
+    function next() { showStep(current + 1); }
+    function prev() { showStep(current - 1); }
+  </script>
+  

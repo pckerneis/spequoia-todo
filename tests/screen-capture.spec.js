@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 
 const SCREENSHOT_INTERVAL = 30;
 const ANIMATION_DURATION = 600;
+const SCREENSHOT_DIRECTORY = 'player/data';
 
 let screenshotCounter = 0;
 const sections = [];
@@ -18,14 +19,14 @@ function saveManifest() {
   const json = JSON.stringify(sections, null, 2);
   const fs = require('fs');
   const path = require('path');
-  const manifestPath = path.join(__dirname, '..', 'screenshots/screenshot-manifest.json');
+  const manifestPath = path.join(__dirname, '..', SCREENSHOT_DIRECTORY, 'screenshot-manifest.json');
   fs.writeFileSync(manifestPath, json);
   console.log(`Manifest saved to ${manifestPath}`);
 }
 
 async function screenshot(page) {
   await page.screenshot({
-    path: `screenshots/${screenshotCounter++}.png`,
+    path: `${SCREENSHOT_DIRECTORY}/${screenshotCounter++}.png`,
   });
 }
 
