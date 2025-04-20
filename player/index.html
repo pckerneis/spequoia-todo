@@ -1,22 +1,36 @@
 <div id="viewer">
     <img id="screenshot" src=""/>
-    <p id="description"></p>
-    <div id="transport-controls" style="margin-top: 16px; display: flex; flex-direction: column; align-items: center;">
+    <div id="transport-controls">
+        <div id="timeline">
+            <div id="timeline-bar" class="timeline-bar"></div>
+            <div id="timeline-preview" class="timeline-preview" style="display:none;"></div>
+        </div>
         <div style="display: flex; gap: 8px; align-items: center;">
             <button id="prev-section">⏮️</button>
             <button id="play-pause">▶️</button>
             <button id="next-section">⏭️</button>
-        </div>
-        <div id="timeline" style="position: relative; width: 100%; max-width: 400px; height: 24px; margin-top: 12px;">
-            <div id="timeline-bar" class="timeline-bar"></div>
-            <div id="timeline-preview" class="timeline-preview" style="display:none;"></div>
+            <p id="description"></p>
         </div>
     </div>
 </div>
 
 <style>
-    img {
-        max-width: 100%;
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    #viewer {
+        max-width: min(100%, 600px);
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
     }
 
     .section {
@@ -39,15 +53,18 @@
         position: absolute;
         left: 0;
         top: 0;
-        border-radius: 2px;
         pointer-events: none;
+    }
+
+    #timeline {
+        position: relative;
     }
 
     .timeline-bar {
         height: 8px;
         border-radius: 2px;
         position: absolute;
-        top: 10px;
+        top: 0;
         left: 0;
         right: 0;
     }
@@ -62,10 +79,6 @@
         border-radius: 50%;
         transform: translate(-50%, calc(4px - 50%));
         pointer-events: none;
-    }
-
-    .timeline-indicator:hover {
-        transform: scale(120%);
     }
 
     .timeline-preview {
@@ -156,7 +169,7 @@
       sectionElement.title = section.name;
       sectionElement.style.position = 'absolute';
 
-      const sectionLength = section.endFrame - section.startFrame;
+      const sectionLength = Math.min(section.endFrame, allFrames.length - 1) - section.startFrame;
       const sectionRelativeWidth = (sectionLength / (allFrames.length - 1)) * 100;
       sectionElement.style.width = section.endFrame < allFrames.length ? `calc(${sectionRelativeWidth}% - 2px)` : `${sectionRelativeWidth}%`;
 
@@ -186,7 +199,7 @@
 
     currentStep = i;
 
-    const frameIdx = allFrames.findIndex(f => f === sections[i].frame);
+    const frameIdx = sections[currentStep].startFrame;
 
     showFrame(frameIdx >= 0 ? frameIdx : 0);
   }
@@ -253,7 +266,7 @@
       } else if (currentFrame < section.startFrame) {
         progress.style.width = '0%';
       } else {
-        const sectionLength = section.endFrame - section.startFrame;
+        const sectionLength = Math.min(allFrames.length - 1, section.endFrame) - section.startFrame;
         const sectionProgress = (currentFrame - section.startFrame) / sectionLength;
         progress.style.width = (sectionProgress * 100) + '%';
       }
@@ -274,11 +287,11 @@
       const frameIdx = Math.round(percent * (allFrames.length - 1));
       const section = frameStepMap[frameIdx];
       // Position preview
-      const previewWidth = 110; // px
+      const previewWidth = 110;
       let left = x - rect.left - previewWidth / 2;
       left = Math.max(0, Math.min(rect.width - previewWidth, left));
       timelinePreview.style.left = left + 'px';
-      timelinePreview.style.top = '-78px';
+      timelinePreview.style.top = '-90px';
 
       // Set content
       timelinePreview.innerHTML = `
