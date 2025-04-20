@@ -225,14 +225,60 @@
     };
     document.getElementById('prev-section').onclick = () => gotoSection(-1);
     document.getElementById('next-section').onclick = () => gotoSection(1);
-    // Allow clicking on timeline to jump to frame
-    document.getElementById('timeline').onclick = (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percent = x / rect.width;
-      const frameIdx = Math.round(percent * (allFrames.length - 1));
-      showFrame(frameIdx);
-    };
+
+    // Timeline dragging logic
+    const timeline = document.getElementById('timeline');
+    let isDragging = false;
+
+    function frameFromEvent(e) {
+      const rect = timeline.getBoundingClientRect();
+      let x = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+      x = Math.max(rect.left, Math.min(rect.right, x));
+      const percent = (x - rect.left) / rect.width;
+      return Math.round(percent * (allFrames.length - 1));
+    }
+
+    timeline.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      document.body.style.userSelect = 'none';
+      showFrame(frameFromEvent(e));
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        showFrame(frameFromEvent(e));
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        showFrame(frameFromEvent(e));
+        isDragging = false;
+        document.body.style.userSelect = '';
+      }
+    });
+
+    // Touch support
+    timeline.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      showFrame(frameFromEvent(e));
+    });
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        showFrame(frameFromEvent(e));
+      }
+    });
+    window.addEventListener('touchend', (e) => {
+      if (isDragging) {
+        showFrame(frameFromEvent(e));
+        isDragging = false;
+      }
+    });
+
+    // Retain click-to-jump for accessibility
+    timeline.addEventListener('click', (e) => {
+      if (!isDragging) {
+        showFrame(frameFromEvent(e));
+      }
+    });
   });
 </script>
   
