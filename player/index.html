@@ -1,29 +1,238 @@
 <div id="viewer">
-    <img id="screenshot" src="" />
+    <img id="screenshot" src=""/>
     <p id="description"></p>
-    <button onclick="prev()">Previous</button>
-    <button onclick="next()">Next</button>
-  </div>
-  
-  <script>
-    let steps = [];
-    let current = 0;
-  
-    fetch('data/screenshot-manifest.json')
+    <div id="transport-controls" style="margin-top: 16px; display: flex; flex-direction: column; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="prev-section">⏮️</button>
+            <button id="play-pause">▶️</button>
+            <button id="next-section">⏭️</button>
+        </div>
+        <div id="timeline" style="position: relative; width: 100%; max-width: 400px; height: 24px; margin-top: 12px;">
+            <div id="timeline-bar" class="timeline-bar"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    img {
+        max-width: 100%;
+    }
+
+    .section {
+        background: #eee;
+        height: 100%;
+        transition: transform 0.1s ease-in-out;
+        transform: scaleY(80%);
+        position: absolute;
+        overflow: hidden;
+    }
+
+    .section:hover {
+        transform: scaleY(120%);
+    }
+
+    .section-progress {
+        background: #007bff;
+        height: 100%;
+        width: 0;
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 2px;
+        pointer-events: none;
+    }
+
+    .timeline-bar {
+        height: 8px;
+        border-radius: 2px;
+        position: absolute;
+        top: 10px;
+        left: 0;
+        right: 0;
+    }
+
+    .timeline-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 16px;
+        height: 16px;
+        background: #007bff;
+        border-radius: 50%;
+        transform: translate(-50%, calc(4px - 50%));
+        pointer-events: none;
+    }
+
+    .timeline-indicator:hover {
+        transform: scale(120%);
+    }
+</style>
+
+<script>
+  let sections = [];
+  let currentStep = 0;
+  let playing = false;
+  let playInterval = null;
+  let allFrames = [];
+  let currentFrame = 0;
+  let frameStepMap = [];
+  let frameDuration = 100; // ms per frame for smooth playback
+
+  fetch('data/screenshot-manifest.json')
       .then(res => res.json())
       .then(data => {
-        steps = data;
-        showStep(0);
+        sections = data.sections;
+
+        allFrames = [];
+        for (let i = 0; i < data.frameCount; i++) allFrames.push(i);
+
+        // Map each frame to the closest previous step index
+        frameStepMap = allFrames.map(f => {
+          let idx = 0;
+          for (let i = 0; i < sections.length; i++) {
+            if (f >= sections[i].frame) idx = i;
+          }
+          return idx;
+        });
+
+        showFrame(0);
+        renderTimeline();
       });
-  
-    function showStep(i) {
-      if (i < 0 || i >= steps.length) return;
-      current = i;
-      document.getElementById('screenshot').src = `data/${steps[i].screenshotCounter}.png`;
-      document.getElementById('description').textContent = steps[i].description;
+
+  function renderTimeline() {
+    const timelineBar = document.getElementById('timeline-bar');
+
+    // Remove old section bars, progress, and indicator
+    timelineBar.innerHTML = '';
+
+    if (!sections.length) return;
+
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+
+      const sectionElement = document.createElement('div');
+      sectionElement.className = 'section';
+      sectionElement.title = section.name;
+      sectionElement.style.position = 'absolute';
+
+      const sectionLength = section.endFrame - section.startFrame;
+      const sectionRelativeWidth = (sectionLength / (allFrames.length - 1)) * 100;
+      sectionElement.style.width = section.endFrame < allFrames.length ? `calc(${sectionRelativeWidth}% - 2px)` : `${sectionRelativeWidth}%`;
+
+      const sectionRelativePosition = (section.startFrame / (allFrames.length - 1)) * 100;
+      sectionElement.style.left = sectionRelativePosition + '%';
+
+      // Add progress bar inside section
+      const progress = document.createElement('div');
+      progress.className = 'section-progress';
+      progress.dataset.sectionIndex = i;
+      sectionElement.appendChild(progress);
+
+      timelineBar.appendChild(sectionElement);
     }
-  
-    function next() { showStep(current + 1); }
-    function prev() { showStep(current - 1); }
-  </script>
+
+    // Add moving indicator
+    const indicator = document.createElement('div');
+    indicator.id = 'timeline-indicator';
+    indicator.className = 'timeline-indicator';
+    timelineBar.appendChild(indicator);
+
+    updateTimeline();
+  }
+
+  function showStep(i) {
+    if (i < 0 || i >= sections.length) return;
+    currentStep = i;
+    // Jump to the frame for this step
+    let frameIdx = allFrames.findIndex(f => f === sections[i].frame);
+    showFrame(frameIdx >= 0 ? frameIdx : 0);
+  }
+
+  function showFrame(frameIdx) {
+    if (frameIdx < 0 || frameIdx >= allFrames.length) return;
+    currentFrame = frameIdx;
+    let stepIdx = frameStepMap[frameIdx];
+    document.getElementById('screenshot').src = `data/${allFrames[frameIdx]}.png`;
+    document.getElementById('description').textContent = sections[stepIdx].description;
+    updateTimeline();
+  }
+
+  function next() {
+    // Next step
+    showStep(currentStep + 1);
+  }
+
+  function prev() {
+    showStep(currentStep - 1);
+  }
+
+  function play() {
+    if (playing) return;
+    playing = true;
+    document.getElementById('play-pause').textContent = '⏸️';
+    playInterval = setInterval(() => {
+      if (currentFrame < allFrames.length - 1) {
+        showFrame(currentFrame + 1);
+      } else {
+        pause();
+      }
+    }, frameDuration);
+  }
+
+  function pause() {
+    playing = false;
+    document.getElementById('play-pause').textContent = '▶️';
+    if (playInterval) clearInterval(playInterval);
+  }
+
+  function gotoSection(dir) {
+    let target = currentStep + dir;
+    if (target < 0) target = 0;
+    if (target >= sections.length) target = sections.length - 1;
+    showStep(target);
+  }
+
+  function updateTimeline() {
+    const indicator = document.getElementById('timeline-indicator');
+
+    if (indicator && allFrames.length > 1) {
+      const percent = currentFrame / (allFrames.length - 1);
+      indicator.style.left = (percent * 100) + '%';
+    }
+
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const progress = document.querySelector(`.section-progress[data-section-index="${i}"]`);
+
+      if (!progress) continue;
+
+      if (currentFrame >= section.endFrame) {
+        progress.style.width = '100%';
+      } else if (currentFrame < section.startFrame) {
+        progress.style.width = '0%';
+      } else {
+        const sectionLength = section.endFrame - section.startFrame;
+        const sectionProgress = (currentFrame - section.startFrame) / sectionLength;
+        progress.style.width = (sectionProgress * 100) + '%';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('play-pause').onclick = () => {
+      if (playing) pause();
+      else play();
+    };
+    document.getElementById('prev-section').onclick = () => gotoSection(-1);
+    document.getElementById('next-section').onclick = () => gotoSection(1);
+    // Allow clicking on timeline to jump to frame
+    document.getElementById('timeline').onclick = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = x / rect.width;
+      const frameIdx = Math.round(percent * (allFrames.length - 1));
+      showFrame(frameIdx);
+    };
+  });
+</script>
   

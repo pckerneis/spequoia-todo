@@ -1,18 +1,30 @@
-[
-  {
-    "name": "Create a task",
-    "screenshotCounter": 1
-  },
-  {
-    "name": "Create a second task",
-    "screenshotCounter": 13
-  },
-  {
-    "name": "Mark task as done",
-    "screenshotCounter": 25
-  },
-  {
-    "name": "Delete the second task",
-    "screenshotCounter": 30
-  }
-]
+{
+  "sections": [
+    {
+      "name": "",
+      "startFrame": 0,
+      "endFrame": 0
+    },
+    {
+      "name": "Create a task",
+      "startFrame": 0,
+      "endFrame": 12
+    },
+    {
+      "name": "Create a second task",
+      "startFrame": 12,
+      "endFrame": 24
+    },
+    {
+      "name": "Mark task as done",
+      "startFrame": 24,
+      "endFrame": 29
+    },
+    {
+      "name": "Delete the second task",
+      "startFrame": 29,
+      "endFrame": 34
+    }
+  ],
+  "frameCount": 34
+}

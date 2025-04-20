@@ -5,18 +5,37 @@ const SCREENSHOT_INTERVAL = 30;
 const ANIMATION_DURATION = 600;
 const SCREENSHOT_DIRECTORY = 'player/data';
 
-let screenshotCounter = 0;
+let frameCounter = 0;
 const sections = [];
 
 function beginSection(name) {
+  if (sections.length === 0 && frameCounter > 0) {
+    sections.push({
+      name: '',
+      startFrame: 0,
+    });
+  }
+
   sections.push({
     name,
-    screenshotCounter,
+    startFrame: frameCounter - 1,
   });
 }
 
 function saveManifest() {
-  const json = JSON.stringify(sections, null, 2);
+  const sectionsWithEndFrames = sections.map((section, index) => {
+    const nextSection = sections[index + 1];
+    return {
+      ...section,
+      endFrame: nextSection ? nextSection.startFrame : frameCounter,
+    };
+  });
+
+  const json = JSON.stringify({
+    sections: sectionsWithEndFrames,
+    frameCount: frameCounter
+  }, null, 2);
+
   const fs = require('fs');
   const path = require('path');
   const manifestPath = path.join(__dirname, '..', SCREENSHOT_DIRECTORY, 'screenshot-manifest.json');
@@ -26,7 +45,7 @@ function saveManifest() {
 
 async function screenshot(page) {
   await page.screenshot({
-    path: `${SCREENSHOT_DIRECTORY}/${screenshotCounter++}.png`,
+    path: `${SCREENSHOT_DIRECTORY}/${frameCounter++}.png`,
   });
 }
 
