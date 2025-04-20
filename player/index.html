@@ -76,7 +76,7 @@
   let allFrames = [];
   let currentFrame = 0;
   let frameStepMap = [];
-  let frameDuration = 100; // ms per frame for smooth playback
+  let frameDuration = 100;
 
   fetch('data/screenshot-manifest.json')
       .then(res => res.json())
@@ -142,9 +142,11 @@
 
   function showStep(i) {
     if (i < 0 || i >= sections.length) return;
+
     currentStep = i;
-    // Jump to the frame for this step
-    let frameIdx = allFrames.findIndex(f => f === sections[i].frame);
+
+    const frameIdx = allFrames.findIndex(f => f === sections[i].frame);
+
     showFrame(frameIdx >= 0 ? frameIdx : 0);
   }
 
@@ -158,7 +160,6 @@
   }
 
   function next() {
-    // Next step
     showStep(currentStep + 1);
   }
 
@@ -243,11 +244,13 @@
       document.body.style.userSelect = 'none';
       showFrame(frameFromEvent(e));
     });
+
     window.addEventListener('mousemove', (e) => {
       if (isDragging) {
         showFrame(frameFromEvent(e));
       }
     });
+
     window.addEventListener('mouseup', (e) => {
       if (isDragging) {
         showFrame(frameFromEvent(e));
@@ -256,16 +259,17 @@
       }
     });
 
-    // Touch support
     timeline.addEventListener('touchstart', (e) => {
       isDragging = true;
       showFrame(frameFromEvent(e));
     });
+
     window.addEventListener('touchmove', (e) => {
       if (isDragging) {
         showFrame(frameFromEvent(e));
       }
     });
+
     window.addEventListener('touchend', (e) => {
       if (isDragging) {
         showFrame(frameFromEvent(e));
@@ -273,12 +277,22 @@
       }
     });
 
-    // Retain click-to-jump for accessibility
     timeline.addEventListener('click', (e) => {
       if (!isDragging) {
         showFrame(frameFromEvent(e));
       }
     });
+
+    document.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 10 : 1;
+
+      if (e.key === 'ArrowLeft') {
+        showFrame(Math.max(0, currentFrame - step));
+      } else if (e.key === 'ArrowRight') {
+        showFrame(Math.min(allFrames.length - 1, currentFrame + step));
+      }
+
+      e.preventDefault();
+    });
   });
 </script>
-  
