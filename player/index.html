@@ -9,6 +9,7 @@
         </div>
         <div id="timeline" style="position: relative; width: 100%; max-width: 400px; height: 24px; margin-top: 12px;">
             <div id="timeline-bar" class="timeline-bar"></div>
+            <div id="timeline-preview" class="timeline-preview" style="display:none;"></div>
         </div>
     </div>
 </div>
@@ -66,6 +67,46 @@
     .timeline-indicator:hover {
         transform: scale(120%);
     }
+
+    .timeline-preview {
+        position: absolute;
+        pointer-events: none;
+        z-index: 100;
+        background: #222;
+        color: #fff;
+        border-radius: 6px;
+        padding: 8px 12px 8px 8px;
+        min-width: 80px;
+        min-height: 60px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: opacity 0.1s;
+    }
+
+    .timeline-preview img {
+        max-width: 90px;
+        max-height: 60px;
+        display: block;
+        margin-bottom: 2px;
+        border-radius: 3px;
+        background: #111;
+    }
+
+    .timeline-preview .preview-section {
+        font-weight: bold;
+        font-size: 12px;
+        color: #fff;
+        margin-top: 2px;
+        text-align: center;
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
 <script>
@@ -88,11 +129,11 @@
 
         // Map each frame to the closest previous step index
         frameStepMap = allFrames.map(f => {
-          let idx = 0;
-          for (let i = 0; i < sections.length; i++) {
-            if (f >= sections[i].frame) idx = i;
+          for (let i = sections.length - 1; i >= 0; i--) {
+            if (f >= sections[i].startFrame) return sections[i];
           }
-          return idx;
+
+          return null;
         });
 
         showFrame(0);
@@ -153,9 +194,9 @@
   function showFrame(frameIdx) {
     if (frameIdx < 0 || frameIdx >= allFrames.length) return;
     currentFrame = frameIdx;
-    let stepIdx = frameStepMap[frameIdx];
+    const section = frameStepMap[frameIdx];
     document.getElementById('screenshot').src = `data/${allFrames[frameIdx]}.png`;
-    document.getElementById('description').textContent = sections[stepIdx].description;
+    document.getElementById('description').textContent = section.name;
     updateTimeline();
   }
 
@@ -220,6 +261,45 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Timeline preview modal and dragging logic use same timeline variable
+    const timeline = document.getElementById('timeline');
+    const timelinePreview = document.getElementById('timeline-preview');
+    let previewActive = false;
+
+    function updatePreview(e) {
+      const rect = timeline.getBoundingClientRect();
+      let x = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+      x = Math.max(rect.left, Math.min(rect.right, x));
+      const percent = (x - rect.left) / rect.width;
+      const frameIdx = Math.round(percent * (allFrames.length - 1));
+      const section = frameStepMap[frameIdx];
+      // Position preview
+      const previewWidth = 110; // px
+      let left = x - rect.left - previewWidth / 2;
+      left = Math.max(0, Math.min(rect.width - previewWidth, left));
+      timelinePreview.style.left = left + 'px';
+      timelinePreview.style.top = '-78px';
+
+      // Set content
+      timelinePreview.innerHTML = `
+        <img src="data/${allFrames[frameIdx]}.png" alt="preview" />
+        ${section && section.name && section.name.trim() ? `<div class='preview-section'>${section.name}</div>` : ''}
+      `;
+      timelinePreview.style.display = 'flex';
+      timelinePreview.style.opacity = 1;
+      previewActive = true;
+    }
+
+    timeline.addEventListener('mousemove', updatePreview);
+    timeline.addEventListener('touchmove', updatePreview);
+    timeline.addEventListener('mouseleave', () => {
+      timelinePreview.style.display = 'none';
+      previewActive = false;
+    });
+    timeline.addEventListener('touchend', () => {
+      timelinePreview.style.display = 'none';
+      previewActive = false;
+    });
     document.getElementById('play-pause').onclick = () => {
       if (playing) pause();
       else play();
@@ -228,7 +308,6 @@
     document.getElementById('next-section').onclick = () => gotoSection(1);
 
     // Timeline dragging logic
-    const timeline = document.getElementById('timeline');
     let isDragging = false;
 
     function frameFromEvent(e) {
